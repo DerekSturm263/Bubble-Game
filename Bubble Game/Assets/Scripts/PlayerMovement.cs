@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
-
+using UnityEngine.Tilemaps;
 using static PlayerInteractionSettings;
 
 [RequireComponent(typeof(PlayerInput), typeof(SpriteRenderer), typeof(Rigidbody2D))]
@@ -195,6 +195,17 @@ public partial class PlayerMovement : MonoBehaviour
             if (playerSettings.Interaction.HasFlag(PlayerInteract.InteractThis) && collision.gameObject.TryGetComponent(out IOnInteract onInteract))
             {
                 onInteract.Interact(this);
+            }
+        }
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.gameObject.TryGetComponent(out PlayerInteractionSettings playerSettings))
+        {
+            if (playerSettings.Interaction.HasFlag(PlayerInteract.DestroyThisTile) && collision.gameObject.TryGetComponent(out Tilemap tilemap))
+            {
+                tilemap.SetTile(tilemap.WorldToCell(transform.position), null);
             }
         }
     }
