@@ -9,6 +9,8 @@ public class Bubble : MonoBehaviour
 
     [SerializeField] private float _despawnTime;
 
+    private RigidbodyType2D _oldType;
+
     private void Awake()
     {
         _anim = GetComponent<Animator>();
@@ -24,7 +26,17 @@ public class Bubble : MonoBehaviour
         }
     }
 
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        HandleCollision(collision);
+    }
+
     private void OnCollisionEnter2D(Collision2D collision)
+    {
+        HandleCollision(collision.collider);
+    }
+
+    private void HandleCollision(Collider2D collision)
     {
         if (collision.gameObject.TryGetComponent(out BubbleInteractionSettings popSettings))
         {
@@ -33,16 +45,17 @@ public class Bubble : MonoBehaviour
                 collision.transform.SetParent(transform, false);
                 collision.transform.localPosition = Vector3.zero;
 
-                collision.rigidbody.bodyType = RigidbodyType2D.Static;
-                collision.collider.enabled = false;
+                _oldType = collision.attachedRigidbody.bodyType;
+                collision.attachedRigidbody.bodyType = RigidbodyType2D.Static;
+                collision.enabled = false;
 
                 transform.localScale = new(1.15f, 1.15f);
                 return;
             }
 
-            if (popSettings.Interaction.HasFlag(BubbleInteraction.BounceThis) && collision.rigidbody.linearVelocityY < 0)
+            if (popSettings.Interaction.HasFlag(BubbleInteraction.BounceThis) && collision.attachedRigidbody.linearVelocityY < 0)
             {
-                collision.rigidbody.linearVelocityY *= -3;
+                collision.attachedRigidbody.linearVelocityY *= -3;
             }
 
             if (popSettings.Interaction.HasFlag(BubbleInteraction.InteractThis) && collision.gameObject.TryGetComponent(out IOnInteract onInteract))
@@ -63,7 +76,7 @@ public class Bubble : MonoBehaviour
     {
         foreach (Rigidbody2D rb in GetComponentsInChildren<Rigidbody2D>())
         {
-            rb.bodyType = RigidbodyType2D.Dynamic;
+            rb.bodyType = _oldType;
         }
 
         foreach (Collider2D col in GetComponentsInChildren<Collider2D>())

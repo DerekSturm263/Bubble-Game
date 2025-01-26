@@ -2,14 +2,16 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Tilemaps;
+
 using static PlayerInteractionSettings;
 
 [RequireComponent(typeof(PlayerInput), typeof(SpriteRenderer), typeof(Rigidbody2D))]
-[RequireComponent(typeof(BoxCollider2D))]
+[RequireComponent(typeof(BoxCollider2D), typeof(Animator))]
 public partial class PlayerMovement : MonoBehaviour
 {
     private SpriteRenderer _rndr;
     private Rigidbody2D _rb;
+    private Animator _anim;
 
     [SerializeField] private float _movementSpeed;
     [SerializeField] private float _jumpForce;
@@ -28,26 +30,20 @@ public partial class PlayerMovement : MonoBehaviour
     public void SetCurrentBubbleCount(int currentBubbleCount) => _currentBubbleCount = currentBubbleCount;
 
     [SerializeField] private Vector2 _holdingOffset;
-    public Vector2 HoldingOffset
-    {
-        get
-        {
-            Vector2 offset = new(_holdingOffset.x * (_rndr.flipX ? -1 : 1), _holdingOffset.y);
-            return offset;
-        }
-    }
+    public Vector2 HoldingOffset => new(_holdingOffset.x * (_rndr.flipX ? 1 : -1), _holdingOffset.y);
 
     private GameObject _currentlyHeld;
     public GameObject CurrentlyHeld => _currentlyHeld;
 
     [SerializeField] private Vector2 _throwForce;
 
-    private float _moveAmount;
+    private Vector2 _moveAmount;
 
     private void Awake()
     {
         _rndr = GetComponent<SpriteRenderer>();
         _rb = GetComponent<Rigidbody2D>();
+        _anim = GetComponent<Animator>();
     }
 
     private void Update()
@@ -66,23 +62,27 @@ public partial class PlayerMovement : MonoBehaviour
             _currentlyHeld.transform.localPosition = HoldingOffset;
         }
 
-        _rb.linearVelocityX = _moveAmount * _movementSpeed;
+        _rb.linearVelocityX = _moveAmount.x * _movementSpeed;
 
-        if (_moveAmount < 0)
+        if (_moveAmount.x > 0)
             _rndr.flipX = true;
-        else if (_moveAmount > 0)
+        else if (_moveAmount.x < 0)
             _rndr.flipX = false;
+
+        _anim.SetFloat("Movement", _moveAmount.x);
+        _anim.SetBool("Grounded", _isGrounded);
+        _anim.SetFloat("YVelocity", _rb.linearVelocityY);
     }
 
     private void OnDrawGizmos()
     {
-        _groundedCast.Draw(transform, _rndr ? _rndr.flipX : false);
-        _interactCast.Draw(transform, _rndr ? _rndr.flipX : false);
+        _groundedCast.Draw(transform, false);
+        _interactCast.Draw(transform, _rndr ? !_rndr.flipX : false);
     }
 
     public void Move(InputAction.CallbackContext ctx)
     {
-        _moveAmount = ctx.ReadValue<Vector2>().x;
+        _moveAmount = ctx.ReadValue<Vector2>();
     }
 
     public void Jump(InputAction.CallbackContext ctx)
@@ -91,6 +91,7 @@ public partial class PlayerMovement : MonoBehaviour
             return;
 
         _rb.AddForce(Vector2.up * _jumpForce, ForceMode2D.Impulse);
+        _anim.SetTrigger("Jump");
     }
 
     public void Bubble(InputAction.CallbackContext ctx)
@@ -101,11 +102,11 @@ public partial class PlayerMovement : MonoBehaviour
         --_currentBubbleCount;
 
         Vector2 bubbleOffset = _bubbleOffset;
-        if (_rndr.flipX)
+        if (!_rndr.flipX)
             bubbleOffset.x *= -1;
         
         GameObject bubble = Instantiate(_bubblePrefab, transform.position + (Vector3)bubbleOffset, Quaternion.identity);
-        bubble.GetComponent<Rigidbody2D>().linearVelocity = new Vector2(_bubbleSpeed * (_rndr.flipX ? -1 : 1), 0);
+        bubble.GetComponent<Rigidbody2D>().linearVelocity = new Vector2(_bubbleSpeed * (_rndr.flipX ? 1 : -1), 0);
     }
 
     public void Interact(InputAction.CallbackContext ctx)
@@ -119,7 +120,7 @@ public partial class PlayerMovement : MonoBehaviour
         }
         else
         {
-            RaycastHit2D hit = _interactCast.GetHit(transform, _rndr.flipX);
+            RaycastHit2D hit = _interactCast.GetHit(transform, !_rndr.flipX);
             
             if (hit && hit.transform.TryGetComponent(out IOnInteract onInteract2))
             {
@@ -141,7 +142,15 @@ public partial class PlayerMovement : MonoBehaviour
         _currentlyHeld = gameObject;
     }
 
-    public void Drop(GameObject gameObject)
+    public void DropOrThrow(GameObject gameObject)
+    {
+        if (_moveAmount.y < -0.8f)
+            Drop(gameObject);
+        else
+            Throw(gameObject);
+    }
+
+    private void Drop(GameObject gameObject)
     {
         gameObject.transform.SetParent(null, true);
 
@@ -154,13 +163,16 @@ public partial class PlayerMovement : MonoBehaviour
         _currentlyHeld = null;
     }
 
-    public void Throw(GameObject gameObject)
+    private void Throw(GameObject gameObject)
     {
         Drop(gameObject);
 
         if (gameObject.TryGetComponent(out Rigidbody2D rb))
         {
-            Vector2 throwForce = new(_throwForce.x * (_rndr.flipX ? -1 : 1), _throwForce.y);
+            Vector2 throwForce = new(_throwForce.x * (_rndr.flipX ? 1 : -1), _throwForce.y);
+
+            if (_moveAmount.y > 0.8f)
+                throwForce.x = 0;
 
             rb.linearVelocity = throwForce;
         }
@@ -180,13 +192,23 @@ public partial class PlayerMovement : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
+        HandleCollision(collision.collider);
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        HandleCollision(collision);
+    }
+
+    private void HandleCollision(Collider2D collision)
+    {
         if (collision.gameObject.TryGetComponent(out PlayerInteractionSettings playerSettings))
         {
             if (playerSettings.Interaction.HasFlag(PlayerInteract.DestroyPlayer))
             {
                 Die();
             }
-            
+
             if (playerSettings.Interaction.HasFlag(PlayerInteract.DestroyThis))
             {
                 Destroy(collision.gameObject);
@@ -196,13 +218,7 @@ public partial class PlayerMovement : MonoBehaviour
             {
                 onInteract.Interact(this);
             }
-        }
-    }
 
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (collision.gameObject.TryGetComponent(out PlayerInteractionSettings playerSettings))
-        {
             if (playerSettings.Interaction.HasFlag(PlayerInteract.DestroyThisTile) && collision.gameObject.TryGetComponent(out Tilemap tilemap))
             {
                 tilemap.SetTile(tilemap.WorldToCell(transform.position), null);

@@ -10,6 +10,12 @@ public class SpawnOnTimer : MonoBehaviour, IOnToggle
 
     [SerializeField] private bool _isOn;
 
+    [SerializeField] private int _maxSpawned;
+
+    private int _currentSpawned;
+    public int IncrementSpawned() => ++_currentSpawned;
+    public int DecrementSpawned() => --_currentSpawned;
+
     private void Start()
     {
         InvokeRepeating(nameof(Spawn), _frequency, _frequency);
@@ -17,10 +23,13 @@ public class SpawnOnTimer : MonoBehaviour, IOnToggle
 
     private void Spawn()
     {
-        if (!_isOn)
+        if (!_isOn || _currentSpawned >= _maxSpawned)
             return;
 
         GameObject spawned = Instantiate(_prefab, transform.position + (Vector3)_offset, Quaternion.identity);
+        
+        SpawnerTag tag = spawned.AddComponent<SpawnerTag>();
+        tag.SetSpawner(this);
         
         if (spawned.TryGetComponent(out Rigidbody2D rb))
         {

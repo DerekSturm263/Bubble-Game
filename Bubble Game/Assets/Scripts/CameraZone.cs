@@ -30,6 +30,12 @@ public class CameraZone : MonoBehaviour
         }
     }
 
+    [ContextMenu("Teleport Here")]
+    public void Teleport()
+    {
+        FindFirstObjectByType<PlayerMovement>().transform.position = _respawnPoint;
+    }
+
     private void OnDrawGizmos()
     {
         Gizmos.DrawWireCube(transform.position + (Vector3)_col.offset, _col.size);

@@ -13,7 +13,7 @@ public class Throwable : MonoBehaviour, IOnInteract
 
         if (player.CurrentlyHeld == gameObject)
         {
-            player.Throw(gameObject);
+            player.DropOrThrow(gameObject);
             _isThrown = true;
         }
         else

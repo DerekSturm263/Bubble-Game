@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 2963038590328259687}
   - component: {fileID: 7561609917020077304}
   - component: {fileID: 5095938088445883938}
+  - component: {fileID: 4823231341378770953}
   - component: {fileID: 6184321606425247773}
   - component: {fileID: 7696901935445562920}
   m_Layer: 8
@@ -237,7 +238,7 @@ SpriteRenderer:
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: 566194c57e4be1a40aea7060649753e4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_FlipX: 0
+  m_FlipX: 1
   m_FlipY: 0
   m_DrawMode: 0
   m_Size: {x: 1, y: 1}
@@ -319,6 +320,28 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 0.425, y: 0.6}
   m_EdgeRadius: 0.2
+--- !u!95 &4823231341378770953
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6433935946308912520}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: dc73f8d7b15862a44be8b3fd4b7fc262, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!114 &6184321606425247773
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -350,7 +373,7 @@ MonoBehaviour:
   _bubbleOffset: {x: 1, y: 0}
   _bubbleSpeed: 3
   _holdingOffset: {x: 0.5, y: 0}
-  _throwForce: {x: 4, y: 4}
+  _throwForce: {x: 7, y: 7}
 --- !u!114 &7696901935445562920
 MonoBehaviour:
   m_ObjectHideFlags: 0
