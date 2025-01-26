@@ -172,7 +172,10 @@ public partial class PlayerMovement : MonoBehaviour
             Vector2 throwForce = new(_throwForce.x * (_rndr.flipX ? 1 : -1), _throwForce.y);
 
             if (_moveAmount.y > 0.8f)
+            {
                 throwForce.x = 0;
+                throwForce.y *= 2;
+            }
 
             rb.linearVelocity = throwForce;
         }

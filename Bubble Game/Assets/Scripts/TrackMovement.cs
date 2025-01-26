@@ -19,6 +19,7 @@ public class TrackMovement : MonoBehaviour, IOnToggle
     [SerializeField] private float _movementSpeed;
     [SerializeField] private float _closenessCheck;
     [SerializeField] private EndType _end;
+    [SerializeField] private bool _isOn;
 
     [SerializeField] private InterpolationType _interpolation;
 
@@ -33,6 +34,9 @@ public class TrackMovement : MonoBehaviour, IOnToggle
 
     void Update()
     {
+        if (!_isOn)
+            return;
+
         if (_interpolation == InterpolationType.Linear)
             transform.position = Vector3.Lerp(Current, Next, _timeAtIndex);
         else if (_interpolation == InterpolationType.Spherical)
