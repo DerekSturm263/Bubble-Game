@@ -1,19 +1,21 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+using static PlayerInteractionSettings;
+
 [RequireComponent(typeof(PlayerInput), typeof(SpriteRenderer), typeof(Rigidbody2D))]
 [RequireComponent(typeof(BoxCollider2D))]
-public class PlayerMovement : MonoBehaviour
+public partial class PlayerMovement : MonoBehaviour
 {
-    private SpriteRenderer _sprt;
+    private SpriteRenderer _rndr;
     private Rigidbody2D _rb;
 
     [SerializeField] private float _movementSpeed;
     [SerializeField] private float _jumpForce;
 
-    [SerializeField] private Vector2 _boxcastOffset;
-    [SerializeField] private Vector2 _boxcastSize;
-    [SerializeField] private LayerMask _boxcastLayer;
+    [SerializeField] private BoxcastSettings _groundedCast;
+    [SerializeField] private BoxcastSettings _interactCast;
 
     private bool _isGrounded;
 
@@ -21,29 +23,52 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private int _maxBubbleCount;
     [SerializeField] private Vector2 _bubbleOffset;
     [SerializeField] private float _bubbleSpeed;
+
     private int _currentBubbleCount;
+    public void SetCurrentBubbleCount(int currentBubbleCount) => _currentBubbleCount = currentBubbleCount;
+
+    [SerializeField] private Vector2 _holdingOffset;
+    public Vector2 HoldingOffset
+    {
+        get
+        {
+            Vector2 offset = new(_holdingOffset.x * (_rndr.flipX ? -1 : 1), _holdingOffset.y);
+            return offset;
+        }
+    }
+
+    private GameObject _currentlyHeld;
+    public GameObject CurrentlyHeld => _currentlyHeld;
+
+    [SerializeField] private Vector2 _throwForce;
 
     private void Awake()
     {
-        _sprt = GetComponent<SpriteRenderer>();
+        _rndr = GetComponent<SpriteRenderer>();
         _rb = GetComponent<Rigidbody2D>();
     }
 
     private void Update()
     {
-        _isGrounded = Physics2D.BoxCast(transform.position + (Vector3)_boxcastOffset, _boxcastSize, 0, Vector2.zero, 0, _boxcastLayer);
+        _isGrounded = _groundedCast.GetHit(transform, false);
     
         if (_isGrounded)
         {
             _currentBubbleCount = _maxBubbleCount;
         }
 
-        _sprt.color = _currentBubbleCount > 0 ? Color.blue : Color.red;
+        _rndr.color = _currentBubbleCount > 0 ? Color.blue : Color.red;
+
+        if (_currentlyHeld)
+        {
+            _currentlyHeld.transform.localPosition = HoldingOffset;
+        }
     }
 
     private void OnDrawGizmos()
     {
-        Gizmos.DrawWireCube(transform.position + (Vector3)_boxcastOffset, _boxcastSize);
+        _groundedCast.Draw(transform, _rndr ? _rndr.flipX : false);
+        _interactCast.Draw(transform, _rndr ? _rndr.flipX : false);
     }
 
     public void Move(InputAction.CallbackContext ctx)
@@ -53,14 +78,14 @@ public class PlayerMovement : MonoBehaviour
         _rb.linearVelocityX = movement * _movementSpeed;
 
         if (movement < 0)
-            _sprt.flipX = true;
+            _rndr.flipX = true;
         else if (movement > 0)
-            _sprt.flipX = false;
+            _rndr.flipX = false;
     }
 
     public void Jump(InputAction.CallbackContext ctx)
     {
-        if (!_isGrounded)
+        if (!_isGrounded || ctx.ReadValue<float>() == 0)
             return;
 
         _rb.AddForce(Vector2.up * _jumpForce, ForceMode2D.Impulse);
@@ -68,16 +93,112 @@ public class PlayerMovement : MonoBehaviour
 
     public void Bubble(InputAction.CallbackContext ctx)
     {
-        if (_currentBubbleCount == 0)
+        if (_currentBubbleCount == 0 || ctx.ReadValue<float>() == 0)
             return;
 
         --_currentBubbleCount;
 
         Vector2 bubbleOffset = _bubbleOffset;
-        if (_sprt.flipX)
+        if (_rndr.flipX)
             bubbleOffset.x *= -1;
         
         GameObject bubble = Instantiate(_bubblePrefab, transform.position + (Vector3)bubbleOffset, Quaternion.identity);
-        bubble.GetComponent<Rigidbody2D>().linearVelocity = new Vector2(_bubbleSpeed * (_sprt.flipX ? -1 : 1), 0);
+        bubble.GetComponent<Rigidbody2D>().linearVelocity = new Vector2(_bubbleSpeed * (_rndr.flipX ? -1 : 1), 0);
+    }
+
+    public void Interact(InputAction.CallbackContext ctx)
+    {
+        if (ctx.ReadValue<float>() == 0)
+            return;
+
+        if (_currentlyHeld && _currentlyHeld.TryGetComponent(out IOnInteract onInteract))
+        {
+            onInteract.Interact(this);
+        }
+        else
+        {
+            RaycastHit2D hit = _interactCast.GetHit(transform, _rndr.flipX);
+            
+            if (hit && hit.transform.TryGetComponent(out IOnInteract onInteract2))
+            {
+                onInteract2.Interact(this);
+            }
+        }
+    }
+
+    public void Grab(GameObject gameObject)
+    {
+        gameObject.transform.SetParent(transform, false);
+
+        if (gameObject.TryGetComponent(out Collider2D col))
+            col.enabled = false;
+
+        if (gameObject.TryGetComponent(out Rigidbody2D rb))
+            rb.bodyType = RigidbodyType2D.Static;
+
+        _currentlyHeld = gameObject;
+    }
+
+    public void Drop(GameObject gameObject)
+    {
+        gameObject.transform.SetParent(null, true);
+
+        if (gameObject.TryGetComponent(out Collider2D col))
+            col.enabled = true;
+
+        if (gameObject.TryGetComponent(out Rigidbody2D rb))
+            rb.bodyType = RigidbodyType2D.Dynamic;
+
+        _currentlyHeld = null;
+    }
+
+    public void Throw(GameObject gameObject)
+    {
+        Drop(gameObject);
+
+        if (gameObject.TryGetComponent(out Rigidbody2D rb))
+        {
+            Vector2 throwForce = new(_throwForce.x * (_rndr.flipX ? -1 : 1), _throwForce.y);
+
+            rb.linearVelocity = throwForce;
+        }
+
+        if (gameObject.TryGetComponent(out BoxCollider2D col))
+        {
+            col.enabled = false;
+            StartCoroutine(ResetCollider(col));
+        }
+    }
+
+    private IEnumerator ResetCollider(BoxCollider2D col)
+    {
+        yield return new WaitForSeconds(0.5f);
+        col.enabled = true;
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.TryGetComponent(out PlayerInteractionSettings playerSettings))
+        {
+            if (playerSettings.Interaction.HasFlag(PlayerInteract.DestroyPlayer))
+            {
+                Destroy(gameObject);
+            }
+            
+            if (playerSettings.Interaction.HasFlag(PlayerInteract.DestroyThis))
+            {
+                Destroy(collision.gameObject);
+            }
+
+            if (playerSettings.Interaction.HasFlag(PlayerInteract.InteractThis) && collision.gameObject.TryGetComponent(out IOnInteract onInteract))
+            {
+                onInteract.Interact(this);
+            }
+        }
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        
     }
 }
