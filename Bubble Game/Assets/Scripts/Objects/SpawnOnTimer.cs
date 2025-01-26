@@ -3,6 +3,7 @@ using UnityEngine;
 public class SpawnOnTimer : MonoBehaviour, IOnToggle
 {
     [SerializeField] private GameObject _prefab;
+    [SerializeField] private float _timerOffset;
     [SerializeField] private float _frequency;
 
     [SerializeField] private Vector2 _offset;
@@ -18,7 +19,7 @@ public class SpawnOnTimer : MonoBehaviour, IOnToggle
 
     private void Start()
     {
-        InvokeRepeating(nameof(Spawn), _frequency, _frequency);
+        InvokeRepeating(nameof(Spawn), _timerOffset, _frequency);
     }
 
     private void Spawn()

@@ -6,14 +6,17 @@ using static BubbleInteractionSettings;
 public class Bubble : MonoBehaviour
 {
     private Animator _anim;
+    private Rigidbody2D _rb;
 
     [SerializeField] private float _despawnTime;
+    [SerializeField] private float _bounceForce;
 
     private RigidbodyType2D _oldType;
 
     private void Awake()
     {
         _anim = GetComponent<Animator>();
+        _rb = GetComponent<Rigidbody2D>();
 
         Destroy(gameObject, _despawnTime);
     }
@@ -42,20 +45,22 @@ public class Bubble : MonoBehaviour
         {
             if (popSettings.Interaction.HasFlag(BubbleInteraction.TrapThis) && transform.childCount == 0)
             {
+                transform.localScale = new(1.2f, 1.2f);
+
                 collision.transform.SetParent(transform, false);
                 collision.transform.localPosition = Vector3.zero;
+                collision.transform.localScale = new(1 / 1.2f, 1 / 1.2f);
 
                 _oldType = collision.attachedRigidbody.bodyType;
                 collision.attachedRigidbody.bodyType = RigidbodyType2D.Static;
                 collision.enabled = false;
 
-                transform.localScale = new(1.15f, 1.15f);
                 return;
             }
 
             if (popSettings.Interaction.HasFlag(BubbleInteraction.BounceThis) && collision.attachedRigidbody.linearVelocityY < 0)
             {
-                collision.attachedRigidbody.linearVelocityY *= -3;
+                collision.attachedRigidbody.linearVelocityY = _bounceForce;
             }
 
             if (popSettings.Interaction.HasFlag(BubbleInteraction.InteractThis) && collision.gameObject.TryGetComponent(out IOnInteract onInteract))
@@ -66,6 +71,7 @@ public class Bubble : MonoBehaviour
             if (popSettings.Interaction.HasFlag(BubbleInteraction.PopBubble))
             {
                 _anim.SetTrigger("Pop");
+                _rb.linearVelocity = Vector2.zero;
 
                 Destroy(gameObject, 0.25f);
             }
@@ -76,12 +82,13 @@ public class Bubble : MonoBehaviour
     {
         foreach (Rigidbody2D rb in GetComponentsInChildren<Rigidbody2D>())
         {
-            rb.bodyType = _oldType;
+            rb.bodyType = RigidbodyType2D.Dynamic;
         }
 
         foreach (Collider2D col in GetComponentsInChildren<Collider2D>())
         {
             col.enabled = true;
+            col.isTrigger = false;
         }
 
         foreach (Throwable throwable in GetComponentsInChildren<Throwable>())

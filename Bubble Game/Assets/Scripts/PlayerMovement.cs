@@ -189,7 +189,7 @@ public partial class PlayerMovement : MonoBehaviour
 
     private IEnumerator ResetCollider(BoxCollider2D col)
     {
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(0.25f);
         col.enabled = true;
     }
 

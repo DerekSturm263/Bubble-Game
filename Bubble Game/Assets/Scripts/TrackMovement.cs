@@ -1,5 +1,6 @@
 using UnityEngine;
 
+[RequireComponent(typeof(LineRenderer))]
 public class TrackMovement : MonoBehaviour, IOnToggle
 {
     public enum InterpolationType
@@ -14,6 +15,8 @@ public class TrackMovement : MonoBehaviour, IOnToggle
         TurnAround,
         LoopAround
     }
+
+    private LineRenderer _rndr;
 
     [SerializeField] private Vector3[] _positions;
     [SerializeField] private float _movementSpeed;
@@ -31,6 +34,14 @@ public class TrackMovement : MonoBehaviour, IOnToggle
 
     private int _nextIndex = 1;
     private Vector3 Next => _positions[_nextIndex % _positions.Length];
+
+    private void Awake()
+    {
+        _rndr = GetComponent<LineRenderer>();
+
+        _rndr.positionCount = _positions.Length;
+        _rndr.SetPositions(_positions);
+    }
 
     void Update()
     {

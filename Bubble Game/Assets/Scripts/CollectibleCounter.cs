@@ -20,7 +20,7 @@ public class CollectibleCounter : MonoBehaviour
 
         _onCollect.Invoke(message);
 
-        if (!_hasCollected)
+        if (!_hasCollected && count == _collectibles.Length)
         {
             _onCollectAll.Invoke(message);
             _hasCollected = true;
