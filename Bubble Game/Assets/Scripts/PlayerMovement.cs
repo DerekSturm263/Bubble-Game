@@ -42,6 +42,8 @@ public partial class PlayerMovement : MonoBehaviour
 
     [SerializeField] private Vector2 _throwForce;
 
+    private float _moveAmount;
+
     private void Awake()
     {
         _rndr = GetComponent<SpriteRenderer>();
@@ -63,6 +65,13 @@ public partial class PlayerMovement : MonoBehaviour
         {
             _currentlyHeld.transform.localPosition = HoldingOffset;
         }
+
+        _rb.linearVelocityX = _moveAmount * _movementSpeed;
+
+        if (_moveAmount < 0)
+            _rndr.flipX = true;
+        else if (_moveAmount > 0)
+            _rndr.flipX = false;
     }
 
     private void OnDrawGizmos()
@@ -73,14 +82,7 @@ public partial class PlayerMovement : MonoBehaviour
 
     public void Move(InputAction.CallbackContext ctx)
     {
-        float movement = ctx.ReadValue<Vector2>().x;
-
-        _rb.linearVelocityX = movement * _movementSpeed;
-
-        if (movement < 0)
-            _rndr.flipX = true;
-        else if (movement > 0)
-            _rndr.flipX = false;
+        _moveAmount = ctx.ReadValue<Vector2>().x;
     }
 
     public void Jump(InputAction.CallbackContext ctx)
@@ -182,7 +184,7 @@ public partial class PlayerMovement : MonoBehaviour
         {
             if (playerSettings.Interaction.HasFlag(PlayerInteract.DestroyPlayer))
             {
-                Destroy(gameObject);
+                Die();
             }
             
             if (playerSettings.Interaction.HasFlag(PlayerInteract.DestroyThis))
@@ -197,8 +199,8 @@ public partial class PlayerMovement : MonoBehaviour
         }
     }
 
-    private void OnTriggerEnter2D(Collider2D collision)
+    public void Die()
     {
-        
+        transform.position = CameraZone.Current.RespawnPoint;
     }
 }

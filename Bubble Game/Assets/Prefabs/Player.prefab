@@ -17,7 +17,7 @@ GameObject:
   - component: {fileID: 7696901935445562920}
   m_Layer: 8
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -235,7 +235,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 6048545008153520342, guid: 40d781e9ba6ba454694b9fb71c42ad3a, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 566194c57e4be1a40aea7060649753e4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -311,14 +311,14 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 0.6306818, y: 1.4545455}
+    oldSize: {x: 0.8125, y: 1}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1, y: 1}
-  m_EdgeRadius: 0
+  m_Size: {x: 0.425, y: 0.6}
+  m_EdgeRadius: 0.2
 --- !u!114 &6184321606425247773
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -332,10 +332,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _movementSpeed: 5
-  _jumpForce: 3
+  _jumpForce: 3.25
   _groundedCast:
     _offset: {x: 0, y: -0.5}
-    _size: {x: 1, y: 0.2}
+    _size: {x: 0.75, y: 0.2}
     _layer:
       serializedVersion: 2
       m_Bits: 8
@@ -363,4 +363,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a30f71895e561ba418fb8437620e975d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _interaction: 0
+  _interaction: 3
