@@ -39,6 +39,12 @@ public partial class PlayerMovement : MonoBehaviour
 
     private Vector2 _moveAmount;
 
+    [SerializeField] private ParticleSystem _movementParticles;
+    [SerializeField] private ParticleSystem _landingParticles;
+
+    [SerializeField] private GameObject _selector;
+    [SerializeField] private Vector2 _selectorOffset;
+
     private void Awake()
     {
         _rndr = GetComponent<SpriteRenderer>();
@@ -48,8 +54,14 @@ public partial class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
-        _isGrounded = _groundedCast.GetHit(transform, false);
-    
+        bool isGrounded = _groundedCast.GetHit(transform, false);
+        if (isGrounded && isGrounded != _isGrounded)
+        {
+            _landingParticles.Emit(10);
+        }
+
+        _isGrounded = isGrounded;
+
         if (_isGrounded)
         {
             _currentBubbleCount = _maxBubbleCount;
@@ -72,6 +84,14 @@ public partial class PlayerMovement : MonoBehaviour
         _anim.SetFloat("Movement", _moveAmount.x);
         _anim.SetBool("Grounded", _isGrounded);
         _anim.SetFloat("YVelocity", _rb.linearVelocityY);
+
+        RaycastHit2D hit = _interactCast.GetHit(transform, !_rndr.flipX);
+        if (hit)
+        {
+            _selector.transform.position = hit.transform.position + (Vector3)_selectorOffset;
+        }
+
+        _selector.SetActive(hit);
     }
 
     private void OnDrawGizmos()
