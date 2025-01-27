@@ -15,7 +15,7 @@ public class CollectibleCounter : MonoBehaviour
 
     private void Update()
     {
-        int count = _collectibles.Count(item => item == null);
+        int count = _collectibles.Count(item => item == null || !item.activeSelf);
         string message = !_onlyShowWhenStarted || count > 0 ? string.Format(_format, count, _collectibles.Length) : "";
 
         _onCollect.Invoke(message);

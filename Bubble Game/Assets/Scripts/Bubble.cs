@@ -11,6 +11,8 @@ public class Bubble : MonoBehaviour
     [SerializeField] private float _despawnTime;
     [SerializeField] private float _bounceForce;
 
+    [SerializeField] private AudioClip _pop;
+
     private RigidbodyType2D _oldType;
 
     private void Awake()
@@ -72,6 +74,7 @@ public class Bubble : MonoBehaviour
             {
                 _anim.SetTrigger("Pop");
                 _rb.linearVelocity = Vector2.zero;
+                AudioSource.PlayClipAtPoint(_pop, transform.position);
 
                 Destroy(gameObject, 0.25f);
             }

@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 1f98f7ae1c77d134cbe7b8618a3eee95
+guid: 20d43875974292044a1c5ed331be54eb
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -8832061191859517945
-    second: PxRectangularBubble_0
+      213: -4541568802418519718
+    second: PxBubbleContainer2_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: PxRectangularBubble_0
+      name: PxBubbleContainer2_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 14
-        height: 10
+        width: 12
+        height: 17
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 70643b8e3273e6580800000000000000
-      internalID: -8832061191859517945
+      spriteID: a5119d88c3b19f0c0800000000000000
+      internalID: -4541568802418519718
       vertices: []
       indices: 
       edges: []
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      PxRectangularBubble_0: -8832061191859517945
+      PxBubbleContainer2_0: -4541568802418519718
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

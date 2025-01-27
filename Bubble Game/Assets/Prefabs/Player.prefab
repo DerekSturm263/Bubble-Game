@@ -10190,6 +10190,11 @@ MonoBehaviour:
   _throwForce: {x: 7, y: 7}
   _movementParticles: {fileID: 6817868198058961734}
   _landingParticles: {fileID: 7197322469913774513}
+  _movement: {fileID: 8300000, guid: 950dcec6b90b81940ac19f67f21a0b8e, type: 3}
+  _jump: {fileID: 8300000, guid: 3a7e2edcf13926c4aadd7100257907bc, type: 3}
+  _land: {fileID: 8300000, guid: a1d5597157e809a4fbd3896d66c51d63, type: 3}
+  _win: {fileID: 8300000, guid: 93ea10fc23427844b9215e17eb8117c5, type: 3}
+  _lose: {fileID: 8300000, guid: c2d59e9cc211b7d4f8a02f76e967143e, type: 3}
   _selector: {fileID: 2843959504587040344}
   _selectorOffset: {x: 0, y: 0.75}
 --- !u!114 &7696901935445562920

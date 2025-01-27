@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 using UnityEngine.Tilemaps;
 
 using static PlayerInteractionSettings;
@@ -42,6 +43,13 @@ public partial class PlayerMovement : MonoBehaviour
     [SerializeField] private ParticleSystem _movementParticles;
     [SerializeField] private ParticleSystem _landingParticles;
 
+    [SerializeField] private AudioClip _movement;
+    [SerializeField] private AudioClip _jump;
+    [SerializeField] private AudioClip _land;
+
+    [SerializeField] private AudioClip _win;
+    [SerializeField] private AudioClip _lose;
+
     [SerializeField] private GameObject _selector;
     [SerializeField] private Vector2 _selectorOffset;
 
@@ -58,6 +66,7 @@ public partial class PlayerMovement : MonoBehaviour
         if (isGrounded && isGrounded != _isGrounded)
         {
             _landingParticles.Emit(10);
+            AudioSource.PlayClipAtPoint(_land, transform.position);
         }
 
         _isGrounded = isGrounded;
@@ -75,6 +84,11 @@ public partial class PlayerMovement : MonoBehaviour
         }
 
         _rb.linearVelocityX = _moveAmount.x * _movementSpeed;
+
+        if (_moveAmount.x != 0 && _isGrounded)
+        {
+            //AudioSource.PlayClipAtPoint(_movement, transform.position);
+        }
 
         if (_moveAmount.x > 0)
             _rndr.flipX = true;
@@ -112,6 +126,8 @@ public partial class PlayerMovement : MonoBehaviour
 
         _rb.AddForce(Vector2.up * _jumpForce, ForceMode2D.Impulse);
         _anim.SetTrigger("Jump");
+
+        AudioSource.PlayClipAtPoint(_jump, transform.position);
     }
 
     public void Bubble(InputAction.CallbackContext ctx)
@@ -237,6 +253,11 @@ public partial class PlayerMovement : MonoBehaviour
                 Destroy(collision.gameObject);
             }
 
+            if (playerSettings.Interaction.HasFlag(PlayerInteract.DisableThis))
+            {
+                collision.gameObject.SetActive(false);
+            }
+
             if (playerSettings.Interaction.HasFlag(PlayerInteract.InteractThis) && collision.gameObject.TryGetComponent(out IOnInteract onInteract))
             {
                 onInteract.Interact(this);
@@ -246,11 +267,19 @@ public partial class PlayerMovement : MonoBehaviour
             {
                 tilemap.SetTile(tilemap.WorldToCell(transform.position), null);
             }
+
+            if (playerSettings.Interaction.HasFlag(PlayerInteract.WinGame))
+            {
+                SceneManager.LoadScene("Win Screen");
+            }
         }
     }
 
     public void Die()
     {
         transform.position = CameraZone.Current.RespawnPoint;
+        SaveState.LoadAll();
+
+        AudioSource.PlayClipAtPoint(_lose, transform.position);
     }
 }

@@ -27,6 +27,8 @@ public class CameraZone : MonoBehaviour
         {
             _confiner.BoundingShape2D = _col;
             _current = this;
+
+            SaveState.SaveAll();
         }
     }
 
