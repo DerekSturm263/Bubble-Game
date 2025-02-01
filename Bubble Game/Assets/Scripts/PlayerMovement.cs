@@ -83,7 +83,8 @@ public partial class PlayerMovement : MonoBehaviour
             _currentlyHeld.transform.localPosition = HoldingOffset;
         }
 
-        _rb.linearVelocityX = _moveAmount.x * _movementSpeed;
+
+		_rb.velocity = new Vector2(_moveAmount.x * _movementSpeed, _rb.velocity.y);
 
         if (_moveAmount.x != 0 && _isGrounded)
         {
@@ -97,7 +98,7 @@ public partial class PlayerMovement : MonoBehaviour
 
         _anim.SetFloat("Movement", _moveAmount.x);
         _anim.SetBool("Grounded", _isGrounded);
-        _anim.SetFloat("YVelocity", _rb.linearVelocityY);
+        _anim.SetFloat("YVelocity", _rb.velocity.y);
 
         RaycastHit2D hit = _interactCast.GetHit(transform, !_rndr.flipX);
         if (hit)
@@ -142,7 +143,7 @@ public partial class PlayerMovement : MonoBehaviour
             bubbleOffset.x *= -1;
         
         GameObject bubble = Instantiate(_bubblePrefab, transform.position + (Vector3)bubbleOffset, Quaternion.identity);
-        bubble.GetComponent<Rigidbody2D>().linearVelocity = new Vector2(_bubbleSpeed * (_rndr.flipX ? 1 : -1), 0);
+        bubble.GetComponent<Rigidbody2D>().velocity = new Vector2(_bubbleSpeed * (_rndr.flipX ? 1 : -1), 0);
     }
 
     public void Interact(InputAction.CallbackContext ctx)
@@ -213,7 +214,7 @@ public partial class PlayerMovement : MonoBehaviour
                 throwForce.y *= 2;
             }
 
-            rb.linearVelocity = throwForce;
+            rb.velocity = throwForce;
         }
 
         if (gameObject.TryGetComponent(out BoxCollider2D col))

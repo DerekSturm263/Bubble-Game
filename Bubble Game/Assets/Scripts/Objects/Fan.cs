@@ -38,7 +38,7 @@ public class Fan : MonoBehaviour, IOnToggle
 
         foreach (Rigidbody2D rb in _rbs)
         {
-            rb.linearVelocity = Vector2.Lerp(rb.linearVelocity, _direction, Time.deltaTime * _redirectSpeed);
+            rb.velocity = Vector2.Lerp(rb.velocity, _direction, Time.deltaTime * _redirectSpeed);
         }
     }
 

@@ -34,7 +34,7 @@ public class SpawnOnTimer : MonoBehaviour, IOnToggle
         
         if (spawned.TryGetComponent(out Rigidbody2D rb))
         {
-            rb.linearVelocity = _velocity;
+            rb.velocity = _velocity;
         }
     }
 

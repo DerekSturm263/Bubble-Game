@@ -18,7 +18,7 @@ public class Redirect : MonoBehaviour
         {
             collision.transform.position = transform.position + (Vector3)(_newDirection.normalized * _col.size);
 
-            rb.linearVelocity = _newDirection;
+            rb.velocity = _newDirection;
         }
     }
 }

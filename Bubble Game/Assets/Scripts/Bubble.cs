@@ -60,9 +60,9 @@ public class Bubble : MonoBehaviour
                 return;
             }
 
-            if (popSettings.Interaction.HasFlag(BubbleInteraction.BounceThis) && collision.attachedRigidbody.linearVelocityY < 0)
+            if (popSettings.Interaction.HasFlag(BubbleInteraction.BounceThis) && collision.attachedRigidbody.velocity.y < 0)
             {
-                collision.attachedRigidbody.linearVelocityY = _bounceForce;
+                collision.attachedRigidbody.velocity = new Vector2(collision.attachedRigidbody.velocity.x, _bounceForce);
             }
 
             if (popSettings.Interaction.HasFlag(BubbleInteraction.InteractThis) && collision.gameObject.TryGetComponent(out IOnInteract onInteract))
@@ -73,7 +73,7 @@ public class Bubble : MonoBehaviour
             if (popSettings.Interaction.HasFlag(BubbleInteraction.PopBubble))
             {
                 _anim.SetTrigger("Pop");
-                _rb.linearVelocity = Vector2.zero;
+                _rb.velocity = Vector2.zero;
                 AudioSource.PlayClipAtPoint(_pop, transform.position);
 
                 Destroy(gameObject, 0.25f);
